@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Ôn Tin 12">
+<title>Ôn Tập Tin Học 12 - GK1</title>
+<style>
+:root{--bg:#f4f7f6;--card:#fff;--tx:#333;--h:#2c3e50;--sub:#555;--grp:#eef2f5;--opt:#ecf0f1;--btn:#bdc3c7;--prog:#7f8c8d;--warn:#fff3cd;--warntx:#333;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#121618;--card:#1e2427;--tx:#e6e9ea;--h:#e6edf2;--sub:#aab4ba;--grp:#2a3236;--opt:#2a3236;--btn:#4a555b;--prog:#9aa5ab;--warn:#3a3420;--warntx:#eee}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#121618;--card:#1e2427;--tx:#e6e9ea;--h:#e6edf2;--sub:#aab4ba;--grp:#2a3236;--opt:#2a3236;--btn:#4a555b;--prog:#9aa5ab;--warn:#3a3420;--warntx:#eee}
+html{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);margin:0;padding:12px;color:var(--tx)}
+.container{max-width:600px;margin:auto;background:var(--card);padding:18px;border-radius:12px;box-shadow:0 4px 10px rgba(0,0,0,.1)}
+h1{text-align:center;color:var(--h);font-size:22px;margin-top:0}
+.lesson-checkbox{display:flex;align-items:center;margin-bottom:8px;padding:10px;background:var(--grp);border-radius:8px;font-size:16px}
+.lesson-checkbox input{width:22px;height:22px;margin-right:10px;flex-shrink:0}
+.main-btn,.next-btn{width:100%;padding:15px;color:#fff;border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;margin-top:15px}
+.main-btn{background:#3498db}.next-btn{background:#f39c12;display:none}
+.progress{text-align:right;color:var(--prog);font-size:14px;margin-bottom:10px;font-weight:bold}
+.question-text{font-size:17px;font-weight:bold;margin-bottom:15px;line-height:1.5}
+.option{display:block;width:100%;padding:12px;margin-bottom:10px;background:var(--opt);color:var(--tx);border:2px solid transparent;border-radius:8px;text-align:left;font-size:16px;line-height:1.4;cursor:pointer;font-family:inherit}
+.option.correct{background:#d4edda;border-color:#28a745;color:#155724;font-weight:bold}
+.option.wrong{background:#f8d7da;border-color:#dc3545;color:#721c24;font-weight:bold}
+.tf-row{padding:12px;background:var(--opt);border-radius:8px;margin-bottom:10px;font-size:15px}
+.tf-text{line-height:1.45;margin-bottom:10px}
+.tf-btns{display:flex;gap:8px}
+.tf-btn{flex:1;padding:10px;border:none;border-radius:8px;font-weight:bold;cursor:pointer;background:var(--btn);color:var(--tx);font-size:15px}
+.tf-btn.selected-true{background:#28a745;color:#fff}.tf-btn.selected-false{background:#dc3545;color:#fff}
+.tf-btn:disabled{cursor:default;opacity:.75}
+.score-box{text-align:center;font-size:24px;color:#e74c3c;font-weight:bold;margin:20px 0}
+.feedback{margin-top:10px;font-size:15px;font-weight:bold;text-align:center}
+.wrong-item{margin-bottom:10px;padding:10px;background:var(--warn);color:var(--warntx);border-radius:6px;font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="container" id="start-screen">
+<h1>Ôn Tập Tin Học 12 - GK1</h1>
+<p style="text-align:center;color:var(--sub)">Chọn bài bạn muốn ôn tập:</p>
+<div id="lesson-list"></div>
+<button class="main-btn" onclick="startQuiz()">Bắt Đầu Làm Bài</button>
+</div>
+
+<div class="container" id="quiz-screen" style="display:none">
+<div class="progress" id="progress-text"></div>
+<div class="question-text" id="question-text"></div>
+<div id="question-body"></div>
+<div class="feedback" id="feedback"></div>
+<button class="next-btn" id="next-btn" onclick="nextQuestion()">Câu Tiếp Theo</button>
+</div>
+
+<div class="container" id="result-screen" style="display:none">
+<h1>Kết Quả Ôn Tập</h1>
+<div class="score-box" id="final-score"></div>
+<div id="detailed-results" style="max-height:50vh;overflow-y:auto;font-size:14px;margin-bottom:20px"></div>
+<button class="main-btn" onclick="location.reload()">Làm Lại Từ Đầu</button>
+</div>
+
+<script>
+const allQuestions = [
+// ===== BÀI 1 =====
+{l:"Bài 1", type:"mc", q:"AI (Trí tuệ nhân tạo) là gì?", o:["Hệ thống tự động","Khả năng của máy tính thực hiện các công việc mang tính trí tuệ của con người","Phần mềm diệt virus","Ứng dụng điện thoại thông minh"], a:1},
+{l:"Bài 1", type:"mc", q:"Mục đích chính của AI là gì?", o:["Xây dựng các phần mềm diệt virus","Xây dựng các phần mềm giúp máy tính có năng lực trí tuệ tương tự con người","Tạo ra các ứng dụng giải trí","Phát triển các trò chơi điện tử"], a:1},
+{l:"Bài 1", type:"mc", q:"Khả năng nào của AI cho phép máy tính điều chỉnh hành vi dựa trên dữ liệu mới?", o:["Khả năng suy luận","Khả năng học","Khả năng nhận thức","Khả năng giải quyết vấn đề"], a:1},
+{l:"Bài 1", type:"mc", q:"Hệ thống nào sau đây là ví dụ về khả năng suy luận của AI?", o:["Hệ thống khuyến nghị YouTube","Hệ thống chẩn đoán y tế","Máy tính điều khiển xe tự lái","Công cụ tìm kiếm Google"], a:1},
+{l:"Bài 1", type:"mc", q:"Khả năng nhận thức của AI là gì?", o:["Điều chỉnh hành vi dựa trên dữ liệu mới","Áp dụng logic để đưa ra quyết định","Cảm nhận và hiểu biết môi trường qua cảm biến","Xử lí ngôn ngữ tự nhiên"], a:2},
+{l:"Bài 1", type:"mc", q:"AI khác biệt so với tự động hóa như thế nào?", o:["AI yêu cầu sự kết hợp của nhiều đặc trưng trí tuệ để thực hiện các nhiệm vụ phức tạp","AI chỉ thực hiện được một nhiệm vụ duy nhất","Tự động hóa không yêu cầu sự can thiệp của con người","Tự động hóa chỉ áp dụng trong lĩnh vực công nghiệp"], a:0},
+{l:"Bài 1", type:"mc", q:"Trí tuệ nhân tạo được thiết kế để thực hiện nhiệm vụ nào sau đây?", o:["Tự học, thực hiện nhiều công việc giống con người","Chơi cờ và nhận dạng khuôn mặt","Chăm sóc sức khỏe","Dự báo thời tiết"], a:0},
+{l:"Bài 1", type:"mc", q:"Hệ chuyên gia MYCIN được sử dụng trong lĩnh vực nào?", o:["Công nghiệp","Y học","Tài chính","Giáo dục"], a:1},
+{l:"Bài 1", type:"mc", q:"Robot Asimo của Honda là ví dụ của ứng dụng AI trong lĩnh vực nào?", o:["Trò chơi điện tử","Dịch vụ khách hàng","Công nghiệp","Điều khiển robot"], a:3},
+{l:"Bài 1", type:"mc", q:"Google Dịch là một ví dụ của khả năng nào trong AI?", o:["Khả năng học","Khả năng suy luận","Khả năng nhận thức","Khả năng hiểu ngôn ngữ"], a:3},
+{l:"Bài 1", type:"tf", q:"Các phát biểu sau đây đúng hay sai khi nói về khái niệm và đặc trưng của AI:", items:[
+{text:"a) AI là khả năng của máy tính thực hiện các công việc mang tính trí tuệ của con người.", a:true},
+{text:"b) Mục đích của AI là xây dựng các phần mềm giúp máy tính có năng lực trí tuệ tương tự con người.", a:true},
+{text:"c) Khả năng học của AI cho phép máy tính ra quyết định dựa trên dữ liệu mới.", a:false},
+{text:"d) Khả năng nhận thức của AI là khả năng xử lí ngôn ngữ tự nhiên.", a:false}]},
+{l:"Bài 1", type:"tf", q:"Phát biểu dưới đây đúng hay sai khi nói về các loại và ứng dụng của AI:", items:[
+{text:"a) Trí tuệ nhân tạo hẹp được thiết kế để thực hiện nhiều nhiệm vụ phức tạp giống con người.", a:false},
+{text:"b) Trí tuệ nhân tạo tổng quát là mục tiêu dài hạn, có khả năng tự học và thực hiện nhiều công việc giống con người.", a:true},
+{text:"c) Hệ chuyên gia MYCIN được sử dụng để dự báo thời tiết.", a:false},
+{text:"d) Robot Asimo của Honda là một ví dụ về ứng dụng AI trong điều khiển robot.", a:true}]},
+
+// ===== BÀI 2 =====
+{l:"Bài 2", type:"mc", q:"Lĩnh vực nào sau đây phát triển nhờ ứng dụng AI?", o:["Nông nghiệp","Chế biến thực phẩm","Phát triển người máy thông minh","Nghề thủ công"], a:2},
+{l:"Bài 2", type:"mc", q:"AI giúp phát triển điều khiển tự động trong lĩnh vực nào?", o:["Nấu ăn tự động","Quản lý tài chính","Thiết bị bay không người lái","Đào tạo nhân sự"], a:2},
+{l:"Bài 2", type:"mc", q:"Sản phẩm nào dưới đây không được phát triển nhờ AI?", o:["Nhận dạng vân tay","Điều hoà không khí tự động","Trợ lý ảo như Siri","Chatbot hỗ trợ khách hàng"], a:1},
+{l:"Bài 2", type:"mc", q:"AI có thể được ứng dụng trong dịch vụ nào?", o:["Chẩn đoán bệnh bằng DeepMind","Sản xuất thuốc bằng máy móc","Dịch vụ vận chuyển hàng hóa","Dịch vụ sửa chữa ô tô"], a:0},
+{l:"Bài 2", type:"mc", q:"Ứng dụng nào dưới đây liên quan đến AI trong y tế?", o:["Chẩn đoán bệnh bằng DeepMind","Sản xuất thuốc bằng máy móc","Vận hành bệnh viện tự động","Quản lý dược phẩm"], a:0},
+{l:"Bài 2", type:"mc", q:"Một cảnh báo về ứng dụng AI là gì?", o:["Tăng cường bảo mật dữ liệu","Tạo ra nhiều việc làm mới","Đe dọa an ninh hệ thống","Giảm bớt sự phân biệt đối xử"], a:2},
+{l:"Bài 2", type:"mc", q:"Lợi ích của AI trong giáo dục và đào tạo là gì?", o:["Tăng chi phí giáo dục","Cá nhân hoá học tập","Giảm chất lượng giảng dạy","Tăng áp lực cho học viên"], a:1},
+{l:"Bài 2", type:"mc", q:"Công nghệ nào của Google Drive liên quan đến AI?", o:["Lưu trữ đám mây","Nhận dạng chữ viết tay (OCR)","Chỉnh sửa văn bản","Bảo mật dữ liệu"], a:1},
+{l:"Bài 2", type:"mc", q:"AI có thể ảnh hưởng đến lĩnh vực tài chính như thế nào?", o:["Tạo ra sản phẩm mới","Phân tích hành vi tài chính để phát hiện gian lận","Quản lý quỹ đầu tư","Điều hành ngân hàng"], a:1},
+{l:"Bài 2", type:"mc", q:"Giải pháp nào cần thiết để giám sát và đảm bảo an toàn trong phát triển AI?", o:["Tăng cường sự minh bạch","Giảm thiểu chi phí phát triển","Hạn chế nghiên cứu AI","Tăng cường sự phát triển của công nghệ"], a:0},
+{l:"Bài 2", type:"tf", q:"Một số lĩnh vực phát triển nhờ ứng dụng AI đúng hay sai?", items:[
+{text:"a) AI giúp phát triển người máy thông minh", a:true},
+{text:"b) AI giúp phát triển điều khiển tự động", a:true},
+{text:"c) AI giúp phát triển một số sản phẩm, tiện ích thông minh", a:true},
+{text:"d) AI giúp phát triển các dịch vụ", a:true}]},
+{l:"Bài 2", type:"tf", q:"Phát biểu sau đây đúng hay sai về cảnh báo ứng dụng AI?", items:[
+{text:"a) AI có khả năng tự động hoá nhiều công việc, dẫn đến áp lực thất nghiệp", a:true},
+{text:"b) Vi phạm quyền riêng tư khi dữ liệu cá nhân bị lạm dụng", a:true},
+{text:"c) Đe dọa an ninh hệ thống khi bị tấn công xâm nhập hoặc thay đổi dữ liệu", a:true},
+{text:"d) Có thể kiểm soát hoặc thay đổi ý thức, hành vi con người một cách không muốn", a:true}]},
+
+// ===== BÀI 3 =====
+{l:"Bài 3", type:"mc", q:"Thiết bị nào hoạt động tại tầng vật lý của mô hình OSI và chuyển tiếp dữ liệu đến tất cả các thiết bị:", o:["Hub","Switch","Router","Modem"], a:0},
+{l:"Bài 3", type:"mc", q:"Thiết bị nào có khả năng chuyển tiếp dữ liệu chỉ đến thiết bị đích mà không phải gửi đến tất cả các thiết bị khác trong mạng?", o:["Hub","Switch","Router","Modem"], a:1},
+{l:"Bài 3", type:"mc", q:"Thiết bị nào có chức năng dẫn đường cho dữ liệu khi kết nối trên mạng Internet?", o:["Hub","Switch","Router","Modem"], a:2},
+{l:"Bài 3", type:"mc", q:"Thiết bị nào chuyển đổi tín hiệu từ tín hiệu số sang tín hiệu tương tự và ngược lại, thường dùng khi kết nối LAN với Internet?", o:["Hub","Switch","Router","Modem"], a:3},
+{l:"Bài 3", type:"mc", q:"Bộ thu phát Wi-Fi còn được gọi là gì?", o:["Hub","Switch","Access Point","Modem"], a:2},
+{l:"Bài 3", type:"mc", q:"Thiết bị nào sử dụng địa chỉ MAC để định tuyến dữ liệu trong mạng LAN?", o:["Hub","Switch","Router","Modem"], a:1},
+{l:"Bài 3", type:"mc", q:"Để mở rộng phạm vi của một mạng LAN không dây, thiết bị nào thường được sử dụng?", o:["Hub","Switch","Router","Access Point"], a:3},
+{l:"Bài 3", type:"mc", q:"Thiết bị nào thường có nhiều cổng WAN và được nhà cung cấp dịch vụ Internet sử dụng để chuyển dữ liệu?", o:["Hub","Switch","Router","Modem"], a:2},
+{l:"Bài 3", type:"mc", q:"Trên thiết bị Android, làm thế nào để kết nối vào mạng Wi-Fi?", o:["Vuốt màn hình từ trên xuống, chọn biểu tượng cài đặt, sau đó chọn biểu tượng kết nối Wi-Fi","Nhấn nút Home ba lần liên tiếp","Vuốt màn hình từ dưới lên, chọn biểu tượng Bluetooth","Chọn biểu tượng mạng trên thanh trạng thái"], a:0},
+{l:"Bài 3", type:"mc", q:"Nếu một trạm Wi-Fi có biểu tượng khóa, điều này có nghĩa là gì?", o:["Trạm không có kết nối Internet","Trạm yêu cầu mật khẩu để kết nối","Trạm chỉ cho phép các thiết bị có địa chỉ MAC cụ thể kết nối","Trạm không hoạt động"], a:1},
+{l:"Bài 3", type:"tf", q:"Phát biểu sau đây đúng hay sai khi nói về thiết bị mạng thông dụng?", items:[
+{text:"a) Hub hoạt động tại tầng vật lý của mạng và chuyển tiếp dữ liệu đến tất cả các thiết bị kết nối. Nguy cơ xung đột tín hiệu cao.", a:true},
+{text:"b) Switch hoạt động tại tầng dữ liệu, có khả năng chuyển tiếp dữ liệu chỉ đến thiết bị đích mà không phải gửi đến tất cả các thiết bị khác trong mạng. Không gây xung đột với tín hiệu của các cuộc truyền ở cổng khác.", a:true},
+{text:"c) Wi-Fi (Wireless Fidelity) truyền dữ liệu bằng sóng vô tuyến, phổ biến trong các mạng cục bộ.", a:true},
+{text:"d) Để thiết lập một LAN đơn giản, ta có thể sử dụng bộ thu phát Wi-Fi để kết nối các thiết bị đầu cuối trong một khu vực mà không cần hub, switch hay cáp mạng.", a:true}]},
+{l:"Bài 3", type:"tf", q:"Thực hành kết nối máy tính với các thiết bị mạng sau đây đúng hay sai?", items:[
+{text:"a) Trên Windows 10 và 11, nhấp vào biểu tượng sóng trên thanh Taskbar để chọn và kết nối với trạm Wi-Fi gần.", a:true},
+{text:"b) Trên Android, vuốt màn hình từ trên xuống, chọn biểu tượng cài đặt, sau đó chọn biểu tượng kết nối Wi-Fi.", a:true},
+{text:"c) Trên iOS, vuốt màn hình từ trên xuống (hoặc từ dưới lên), chọn biểu tượng để xem danh sách các trạm Wi-Fi gần, bao gồm tên, trạng thái bảo mật và thông tin kết nối.", a:true},
+{text:"d) Để kết nối thiết bị vào mạng LAN qua Wi-Fi, chọn trạm Wi-Fi thuộc LAN đó. Nếu trạm có biểu tượng khoá, yêu cầu nhập mật khẩu để kết nối. Sau khi nhập đúng, chọn Connect (hoặc Kết nối).", a:true}]},
+
+// ===== BÀI 4 =====
+{l:"Bài 4", type:"mc", q:"Giao thức mạng là gì?", o:["Phần cứng trong mạng","Tập hợp các quy định về cách thức giao tiếp trong mạng","Phần mềm dùng để kiểm tra bảo mật","Một loại thiết bị mạng"], a:1},
+{l:"Bài 4", type:"mc", q:"Giao thức IP làm nhiệm vụ gì trong mạng?", o:["Xác định địa chỉ MAC cho các thiết bị","Chia dữ liệu thành các gói nhỏ","Thiết lập địa chỉ và dẫn đường các gói dữ liệu","Kiểm tra lỗi trong truyền dữ liệu"], a:2},
+{l:"Bài 4", type:"mc", q:"Có bao nhiêu phiên bản địa chỉ IP chính?", o:["1","2","3","4"], a:1},
+{l:"Bài 4", type:"mc", q:"Địa chỉ IP khác với địa chỉ MAC ở điểm nào?", o:["IP là địa chỉ phần cứng, MAC là địa chỉ logic","IP là địa chỉ tạm thời, MAC là địa chỉ cố định","IP là địa chỉ của giao diện mạng, MAC là địa chỉ của thiết bị vật lý","IP là địa chỉ trong mạng LAN, MAC là địa chỉ trong mạng WAN"], a:1},
+{l:"Bài 4", type:"mc", q:"Router trong mạng đóng vai trò gì?", o:["Chia sẻ tài nguyên mạng","Chuyển tiếp bưu phẩm dữ liệu","Kiểm tra lỗi dữ liệu","Tạo và quản lý kết nối VPN"], a:1},
+{l:"Bài 4", type:"mc", q:"Giao thức nào đảm bảo dữ liệu được truyền đến đúng ứng dụng và theo thứ tự?", o:["IP","TCP","UDP","HTTP"], a:1},
+{l:"Bài 4", type:"mc", q:"Giao thức TCP cung cấp cơ chế gì để đảm bảo truyền dữ liệu tin cậy?", o:["Phát hiện và sửa lỗi","Chuyển đổi địa chỉ IP","Phân phối tài nguyên","Mã hóa dữ liệu"], a:0},
+{l:"Bài 4", type:"mc", q:"Giao thức nào thường được sử dụng cùng với IP để quản lý kết nối và truyền dữ liệu trong Internet?", o:["FTP","SMTP","TCP","DHCP"], a:2},
+{l:"Bài 4", type:"mc", q:"Giao thức nào không đảm bảo dữ liệu được truyền đúng thứ tự và có thể mất mát dữ liệu?", o:["IP","TCP","UDP","HTTP"], a:2},
+{l:"Bài 4", type:"mc", q:"Trong mô hình OSI, giao thức IP hoạt động tại tầng nào?", o:["Tầng ứng dụng","Tầng truyền tải","Tầng mạng","Tầng liên kết dữ liệu"], a:2},
+{l:"Bài 4", type:"tf", q:"Các phát biểu sau đúng hay sai về Giao thức IP và TCP?", items:[
+{text:"a) Giao thức IP đảm bảo dữ liệu được truyền đến ứng dụng cụ thể trên máy.", a:false},
+{text:"b) Có hai loại địa chỉ IP là IPv4 và IPv6.", a:true},
+{text:"c) Địa chỉ IP và địa chỉ MAC là giống nhau.", a:false},
+{text:"d) Router đóng vai trò như các bưu cục chuyển tiếp bưu phẩm.", a:true}]},
+{l:"Bài 4", type:"tf", q:"Phát biểu sau đúng hay sai về Giao thức TCP?", items:[
+{text:"a) Giao thức TCP chỉ đảm bảo chuyển dữ liệu giữa các mạng mà không đảm bảo truyền dữ liệu theo thứ tự.", a:false},
+{text:"b) Giao thức TCP cung cấp cơ chế xác nhận gửi lại dữ liệu khi cần.", a:true},
+{text:"c) TCP chia dữ liệu thành các gói để tận dụng đường truyền.", a:true},
+{text:"d) TCP không phân biệt giữa các ứng dụng khác nhau khi truyền dữ liệu.", a:false}]},
+
+// ===== BÀI 5 =====
+{l:"Bài 5", type:"mc", q:"Để thiết lập chế độ mạng riêng tư và cho phép chia sẻ tệp và máy in, bước đầu tiên cần làm là gì?", o:["Tắt tạm thời tường lửa","Thiết lập chế độ mạng riêng","Cho phép các máy khác nhìn thấy","Mở chức năng thiết lập chia sẻ nâng cao"], a:1},
+{l:"Bài 5", type:"mc", q:"Thư mục công cộng trên hệ thống được thiết lập ở đâu?", o:["C:\\Users\\Public","C:\\Windows\\Public","C:\\Program Files\\Public","C:\\Documents\\Public"], a:0},
+{l:"Bài 5", type:"mc", q:"Để tạm thời dừng tường lửa, bạn vào phần nào trong Windows Security?", o:["Device Security","Firewall & Network Protection","App & Browser Control","Virus & Threat Protection"], a:1},
+{l:"Bài 5", type:"mc", q:"Để chia sẻ thư mục trên MAY_1, bước nào sau đây là đúng?", o:["Chọn thư mục, nhấp chuột phải, chọn Properties, sau đó chọn Sharing","Chọn thư mục, nhấp chuột phải, chọn Share","Mở thư mục, sau đó chọn Share","Chọn thư mục, sau đó chọn Add to Network"], a:0},
+{l:"Bài 5", type:"mc", q:"Để thêm người dùng vào danh sách chia sẻ, bạn cần làm gì?", o:["Chọn thư mục, sau đó chọn Add User","Trong thẻ Sharing, chọn Add sau khi chọn Everyone","Nhấp chuột phải lên thư mục, chọn Add to Share List","Mở thư mục, chọn Add User"], a:1},
+{l:"Bài 5", type:"mc", q:"Bước cuối cùng để hủy bỏ chia sẻ thư mục là gì?", o:["Nhấp chuột phải lên thư mục, chọn Stop Sharing","Nhấp chuột phải lên thư mục, chọn Advanced Sharing","Xóa thư mục từ mạng","Chọn thư mục và nhấp chuột vào Remove from Share"], a:0},
+{l:"Bài 5", type:"mc", q:"Để chia sẻ máy in trên mạng, bước đầu tiên là gì?", o:["Mở phần mềm máy in","Tìm máy in trong Control Panel","Cài đặt lại máy in","Chọn Printer properties"], a:1},
+{l:"Bài 5", type:"mc", q:"Sau khi tìm thấy máy in mạng, bạn làm gì tiếp theo để chia sẻ nó?", o:["Chọn máy in, sau đó chọn Share","Chọn máy in, sau đó chọn Printer properties và thiết lập chia sẻ","Nhấp chuột phải lên máy in, chọn Share","Kết nối máy in với máy tính khác"], a:1},
+{l:"Bài 5", type:"mc", q:"Để kết nối với máy in mạng từ máy tính khác, bạn cần làm gì?", o:["Tìm máy in trong phần Devices","Vào phần Add device và tìm máy in","Nhấp chuột phải lên máy in, chọn Connect","Chọn máy in từ danh sách và nhấp chuột vào Add"], a:3},
+{l:"Bài 5", type:"mc", q:"Khi chọn “The printer that I want isn’t listed” trong quá trình kết nối máy in mạng, bạn cần làm gì tiếp?", o:["Chọn máy in từ danh sách và nhấp chuột vào Add","Nhập địa chỉ IP của máy in","Sử dụng chức năng Browse để tìm máy in","Cài đặt lại driver máy in"], a:2},
+{l:"Bài 5", type:"tf", q:"Để chia sẻ tệp và thư mục trên mạng cục bộ, bạn cần thực hiện các bước sau đây đúng hay sai?", items:[
+{text:"a) Thiết lập chế độ mạng riêng.", a:true},
+{text:"b) Thiết lập chia sẻ thư mục công cộng.", a:true},
+{text:"c) Bật tường lửa để bảo vệ an ninh mạng.", a:false},
+{text:"d) Cho phép các máy khác trong mạng có thể phát hiện và chia sẻ tệp và máy in.", a:true}]},
+{l:"Bài 5", type:"tf", q:"Quy trình kết nối máy in mạng từ các máy tính khác bao gồm các bước sau đúng hay sai?", items:[
+{text:"a) Tìm máy in mạng và chọn 'Add device'.", a:true},
+{text:"b) Sau khi thêm máy in, chọn 'The printer that I want isn’t listed' để tiếp tục.", a:false},
+{text:"c) Chọn 'Browse' để tìm và thêm máy in mạng.", a:true},
+{text:"d) Sử dụng máy in mạng ngay sau khi thêm máy in vào danh sách.", a:true}]},
+
+// ===== BÀI 6 =====
+{l:"Bài 6", type:"mc", q:"Các quy tắc ứng xử trên mạng xã hội phù hợp với quy định của pháp luật được nêu trong văn bản nào?", o:["Quyết định số 874-QĐ-BTTTT ngày 17/6/2021","Quyết định số 874-QĐ-BTTTT ngày 17/6/2019","Quyết định số 847-QĐ-BTTTT ngày 17/6/2021","Quyết định số 784-QĐ-BTTTT ngày 17/6/2020"], a:0},
+{l:"Bài 6", type:"mc", q:"Phương án nào sau đây không là công cụ giao tiếp trong không gian mạng?", o:["Mạng xã hội","Hội nghị truyền hình","Thư giấy","FaceTime"], a:2},
+{l:"Bài 6", type:"mc", q:"Chia sẻ thông tin chính xác và đáng tin cậy, tránh lan truyền thông tin sai lệch hoặc tin đồn thể hiện khía cạnh nào trong việc ứng xử nhân văn trong không gian mạng?", o:["Lịch sự","Thấu hiểu","Tôn trọng","Hỗ trợ"], a:2},
+{l:"Bài 6", type:"mc", q:"Em cần ứng xử như thế nào để thể hiện sự tôn trọng khi giao tiếp trong không gian mạng?", o:["Cố gắng đặt mình vào hoàn cảnh của người khác","Không sử dụng ngôn từ nhạy cảm, lăng mạ, châm chọc, phỉ báng hoặc phân biệt chủng tộc","Không châm chọc hoặc làm cho người khác cảm thấy bị tổn thương","Gửi những lời động viên chân thành"], a:1},
+{l:"Bài 6", type:"mc", q:"Em cần làm gì để hình thành thói quen ứng xử nhân văn trong không gian mạng?", o:["Đối xử với người khác theo cách mà mình muốn","Tự kiểm điểm, cải thiện hành vi trực tuyến của mình","Làm theo ý muốn cá nhân, không tôn trọng ý kiến người khác","Sử dụng ngôn từ và cách viết tuỳ hứng"], a:1},
+{l:"Bài 6", type:"mc", q:"Phương án nào sau đây không là tình huống sử dụng giao tiếp trong không gian mạng?", o:["Tham gia một cuộc họp trực tuyến","Tới thăm nhà họ hàng","Nộp bài tập bằng thư điện tử","Trò chuyện nhóm trên Facebook"], a:1},
+{l:"Bài 6", type:"mc", q:"Một phát biểu sai về đặc điểm của giao tiếp qua mạng là", o:["hoạt động chứa tín hiệu cảm xúc","thuận lợi cho việc lưu trữ thông tin","mở rộng các mối quan hệ xã hội","giao tiếp diễn ra ở mọi hoàn cảnh"], a:3},
+{l:"Bài 6", type:"mc", q:"Một thuật ngữ có thể thay thế cho cụm từ 'Không gian mạng' là", o:["thế giới công nghệ","thế giới số","thế giới thực","thế giới ảo"], a:3},
+{l:"Bài 6", type:"mc", q:"Một ví dụ về ưu điểm của mạng xã hội gây ảnh hưởng xấu đến thế giới thực là", o:["học tập trực tuyến không cần đến lớp học","giao tiếp với người thân ở khoảng cách xa","hỗ trợ truyền tải thông điệp có tính cá nhân","trao đổi các tài liệu công việc với đối tác"], a:0},
+{l:"Bài 6", type:"mc", q:"Một nhược điểm của giao tiếp thông qua tin nhắn là", o:["khó mở rộng giao tiếp với nhiều đối tượng","số lượng kí tự trong thông điệp bị giới hạn","khó truyền đạt toàn bộ cảm xúc cá nhân","tốc độ truyền tải thông điệp chưa nhanh"], a:2},
+
+// ===== THAM KHẢO =====
+{l:"Tham khảo", type:"tf", q:"Câu 1. AI là các hệ thống do con người xây dựng nhằm giúp máy tính có thể thực hiện các hành vi thông minh như con người.", items:[
+{text:"a. Theo chức năng có thể chia AI thành hai loại chính là AI hẹp và AI tổng quát.", a:true},
+{text:"b. Robot Atlas của hãng Honda là robot hình người đầu tiên trên thế giới được tích hợp một loạt ứng dụng AI như tự động điều khiển, nhận dạng hình ảnh, nhận dạng tiếng nói.", a:false},
+{text:"c. Khả năng nhận thức là khả năng tìm ra cách giải quyết các tình huống phức tạp dựa trên thông tin và tri thức.", a:false},
+{text:"d. Công nghệ nhận dạng chữ viết tay được sử dụng rộng rãi trong quá trình xử lí hoá đơn và các tài liệu khác trong giao dịch thương mại điện tử, tự động hoá quy trình nhập dữ liệu.", a:true}]},
+{l:"Tham khảo", type:"tf", q:"Câu 2. Thiết bị mạng là các thiết bị có khả năng kết nối với nhau và cho phép kết nối các máy tính hoặc các thiết bị thông minh để tạo ra hệ thống mạng máy tính.", items:[
+{text:"a. Điểm khác nhau của Switch và Hub nằm ở số lượng cổng của mỗi thiết bị.", a:false},
+{text:"b. Thông thường Router của các mạng gia đình chỉ có một cổng WAN kết nối đến nhà cung cấp dịch vụ Internet mà không cần phải định tuyến.", a:false},
+{text:"c. Việc chuyển đổi tín hiệu dạng số sang dạng tương tự hoặc dạng tín hiệu nào đó phù hợp để truyền qua đường truyền mạng gọi là giải điều chế xung (Demodulation).", a:false},
+{text:"d. Khi kết nối máy tính với các thiết bị mạng, cần cắm một đầu giắc của cáp tín hiệu vào cổng VJ45 của máy tính.", a:false}]},
+{l:"Tham khảo", type:"tf", q:"Câu 3. Giao thức mạng là tập hợp các quy định về cách thức giao tiếp để truyền dữ liệu giữa các đối tượng tham gia mạng.", items:[
+{text:"a. Các quy định liên quan đến gửi thư có tên là giao thức POP3 hoặc IMAP.", a:false},
+{text:"b. Việc truyền dữ liệu trong mạng cục bộ sẽ căn cứ vào địa chỉ IP.", a:false},
+{text:"c. Lệnh ipconfig dùng để kiểm tra cấu hình IP của máy tính đang sử dụng.", a:true},
+{text:"d. Địa chỉ IP 10001000 11010111 01011110 00010011 dưới dạng thập phân là 136.215.47.19.", a:false}]},
+{l:"Tham khảo", type:"tf", q:"Câu 5. AI là các hệ thống do con người xây dựng nhằm giúp máy tính có thể thực hiện các hành vi thông minh như con người.", items:[
+{text:"a. Hội thảo Dartmouth (1965) được coi là điểm mốc ghi nhận sự ra đời của thuật ngữ AI, đánh dấu sự khởi đầu của lĩnh vực AI.", a:false},
+{text:"b. Xây dựng các hệ thống Trí tuệ nhân tạo tổng quát là mục tiêu dài hạn của các nghiên cứu về AI.", a:true},
+{text:"c. Hệ chuyên gia MYCIN sử dụng các kĩ thuật Học máy để xác định một số loại vi khuẩn gây nhiễm trùng máu và đề xuất sử dụng kháng sinh với liều lượng thích hợp.", a:false},
+{text:"d. Công nghệ nhận dạng khuôn mặt được sử dụng để nhận dạng và xác minh chữ kí trong các giao dịch điện tử.", a:false}]},
+{l:"Tham khảo", type:"tf", q:"Câu 6. Thiết bị mạng là các thiết bị có khả năng kết nối với nhau và cho phép kết nối các máy tính hoặc các thiết bị thông minh để tạo ra hệ thống mạng máy tính.", items:[
+{text:"a. Dùng Switch có nguy cơ xung đột tín hiệu cao hơn khi dùng Hub.", a:false},
+{text:"b. WAP dùng để kết nối các thiết bị đầu cuối qua sóng Wi-Fi giúp giảm chi phí thiết lập LAN hoặc kết nối với một LAN để mở rộng phạm vi làm việc.", a:true},
+{text:"c. Việc chuyển đổi ngược lại tín hiệu từ dạng tương tự hoặc các dạng tín hiệu khác nhau thành dạng số ban đầu gọi là điều chế xung (Modulation).", a:false},
+{text:"d. Khi kết nối máy tính với các thiết bị mạng, cần cắm một đầu giắc của cáp tín hiệu vào cổng RJ45 của máy tính.", a:true}]},
+{l:"Tham khảo", type:"tf", q:"Câu 7. Giao thức mạng là tập hợp các quy định về cách thức giao tiếp để truyền dữ liệu giữa các đối tượng tham gia mạng.", items:[
+{text:"a. Các quy định về cách người nhận lấy thư có tên là giao thức POP3 hoặc IMAP.", a:true},
+{text:"b. Giao thức IP đảm bảo chuyển dữ liệu từ mạng này đến mạng kia và chuyển dữ liệu đến một ứng dụng cụ thể trên một máy cụ thể.", a:false},
+{text:"c. Giao thức ICMP được sử dụng để gửi một yêu cầu đến một máy tính khác, một thiết bị mạng hay một ứng dụng trên mạng để lấy thông tin phản hồi.", a:true},
+{text:"d. Địa chỉ IP 11011111 10111111 00111010 00000111 dưới dạng thập phân là 223.191.58.7.", a:true}]},
+{l:"Tham khảo", type:"tf", q:"Câu 9. Sự phát triển của AI đã và đang diễn ra với tốc độ nhanh chóng, có tiềm năng cách mạng hoá nhiều lĩnh vực khoa học và đời sống.", items:[
+{text:"a. Các thành tựu hiện tại của AI nói chung đều thuộc phạm vi Trí tuệ nhân tạo mạnh.", a:false},
+{text:"b. Các nhà thiên văn học sử dụng mạng thần kinh nhân tạo để nghiên cứu sâu hơn, tìm hiểu bản chất cơ bản của vũ trụ.", a:true},
+{text:"c. ChatGPT là một hệ thống có tri thức, có khả năng suy luận và khả năng học,...", a:true},
+{text:"d. Phiên bản GPT-2 được huấn luyện trên hàng vạn văn bản thuộc nhiều lĩnh vực khác nhau trên Internet, bao gồm sách, bài báo, trang web và nhiều nguồn khác.", a:true}]},
+{l:"Tham khảo", type:"tf", q:"Câu 10. Thiết bị mạng là các thiết bị có khả năng kết nối với nhau và cho phép kết nối các máy tính hoặc các thiết bị thông minh để tạo ra hệ thống mạng máy tính.", items:[
+{text:"a. Điểm khác nhau của Switch và Hub nằm ở cách thức hoạt động.", a:true},
+{text:"b. Mạng viên thông sử dụng Modem để chuyển tiếp dữ liệu.", a:false},
+{text:"c. Không thể dùng cáp mạng nối qua Hub hay Switch để kết nối hai máy tính thuộc hai LAN khác nhau qua Internet.", a:true},
+{text:"d. Khi nối thêm một WAP vào LAN, có thể kết nối không dây các thiết bị di động giúp mở rộng phạm vi địa lí của LAN.", a:true}]},
+{l:"Tham khảo", type:"tf", q:"Câu 11. Giao thức mạng là tập hợp các quy định về cách thức giao tiếp để truyền dữ liệu giữa các đối tượng tham gia mạng.", items:[
+{text:"a. MAC là địa chỉ vật lí của máy tính.", a:true},
+{text:"b. Mỗi địa chỉ IPv4 là một số 4 bit.", a:false},
+{text:"c. Giao thức IP đảm bảo việc truyền dữ liệu theo từng ứng dụng một cách chính xác, tin cậy và hiệu quả.", a:false},
+{text:"d. Địa chỉ IP 11110000 10101100 00100011 00000100 dưới dạng thập phân là 240.172.35.8.", a:false}]},
+
+// ===== ĐỀ MINH HỌA =====
+{l:"Đề minh họa", type:"mc", q:"Thuật ngữ AI được chính thức đề cập một cách khoa học ở đâu?", o:["Trong một công trình của nhà Toán học nối tiếng A. Turing","Trong Truyện cổ dân gian","Tại Hội thảo Dartmouth năm 1956","Trong nhiều công trình nghiên cứu được công bố trong nhiều năm khác nhau"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Theo em, hiện tại AI không có khả năng nào sau đây?", o:["Dịch thuật","Phân biệt màu sắc","Làm thơ","Phân biệt mùi vị"], a:3},
+{l:"Đề minh họa", type:"mc", q:"Đặc trưng nào sau đây không là một trong những đặc trưng cơ bản của AI?", o:["Khả năng học","Khả năng vận động","Khả năng nhận thức","Khả năng suy luận"], a:1},
+{l:"Đề minh họa", type:"mc", q:"Phương án nào là phương án ĐÚNG khi nói về sự khác nhau giữa Trí tuệ nhân tạo hẹp (AI hẹp) và Trí tuệ nhân tạo tổng quát (AI mạnh)?", o:["AI hẹp chỉ thực hiện một nhiệm vụ cụ thể","AI mạnh thực hiện được một công việc giống như con người","AI hẹp có khả năng tự học","AI hẹp không thể ra quyết định"], a:0},
+{l:"Đề minh họa", type:"mc", q:"Phương án nào là phương án trả lời ĐÚNG khi nói về sự khác nhau giữa AI và tự động hoá?", o:["AI không thể đạt hiệu suất cao","AI không thể thực hiện các thao tác lặp đi lặp lại một cách cơ học","AI thể hiện các đặc trưng trí tuệ như con người","AI có thể được sử dụng trong các dây chuyền lắp ráp"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Trong y học, AI không được sử dụng để:", o:["Cải thiện chất lượng hình ảnh y tế","Hỗ trợ chẩn đoán và điều trị","Chế tạo thuốc điều trị mới","Thực hiện các phẫu thuật y khoa một cách độc lập"], a:3},
+{l:"Đề minh họa", type:"mc", q:"Ứng dụng nào sau đây không phải của AI trong ngành tài chính?", o:["Phân tích dữ liệu đầu tư","Phát hiện và ngăn chặn gian lận","Tự động hoá quá trình sản xuất","Tự động hoá cập nhật chứng từ"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Bên cạnh những lợi ích to lớn, sự phát triển của AI KHÔNG kéo theo nguy cơ cần được cảnh báo nào?", o:["Áp lực thất nghiệp","Các Hệ chuyên gia ngày càng thông minh","Ảnh hưởng quyền riêng tư","Rủi ro về an ninh, an toàn"], a:1},
+{l:"Đề minh họa", type:"mc", q:"Cách nào sau đây KHÔNG là cách bảo vệ sự phát triển của AI trong tương lai?", o:["Đảm bảo tính minh bạch và trách nhiệm giải trình","Không cần kiểm soát sự phát triển của AI","Thiết lập các nguyên tắc đạo đức","Khuyến khích nghiên cứu và phát triển AI vì mục đích tiến bộ"], a:1},
+{l:"Đề minh họa", type:"mc", q:"Theo bạn, điều gì KHÔNG là thách thức đối với việc đảm bảo sự phát triển AI vì lợi ích cộng đồng?", o:["Giải quyết các vấn đề đạo đức liên quan đến AI","Đảm bảo AI không gây ra thất nghiệp hàng loạt","AI tạo ra những công việc đòi hỏi năng lực và kĩ năng mới","Duy trì sự kiểm soát của con người đối với AI"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Khả năng học của AI là gì?", o:["Trích xuất thông tin từ dữ liệu để học và tích lũy tri thức","Cảm nhận và hiểu biết môi trường thông qua các cảm biến","Khả năng vận dụng logic và tri thức để đưa ra quyết định","Khả năng tìm ra cách giải quyết các tình huống phức tạp"], a:0},
+{l:"Đề minh họa", type:"mc", q:"Hiện tại AI KHÔNG có khả năng nào sau đây?", o:["Khả năng học và tích lũy tri thức","Khả năng hiểu ngôn ngữ của con người","Khả năng cảm nhận và thấu hiểu cảm xúc của con người một cách trọn vẹn","Khả năng giải quyết vấn đề"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Điều nào sau đây là sai?", o:["Switch có thể thay được hub trong mọi trường hợp","Switch chỉ có thể thay thế cho hub khi số thiết bị mạng lớn hay tần suất sử dụng cao","Trong mạng gia đình có ít thiết bị, không cần dùng switch","Hub không thể thay thế cho switch trong mọi trường hợp"], a:1},
+{l:"Đề minh họa", type:"mc", q:"Trước khi chia sẻ tài nguyên trong mạng cục bộ, nên thiết lập một số chế độ. Thiết lập nào không cần thiết?", o:["Thiết lập chế độ mạng riêng (private)","Thiết lập trạng thái cho các máy tính khác nhìn thấy (discoverable)","Huỷ bỏ việc phải đăng nhập vào máy cho chia sẻ tài nguyên","Tắt tạm thời tường lửa"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Thiết bị nào dưới đây có chức năng “Biến đổi dữ liệu số từ các thiết bị kết nối mạng thành tín hiệu tương tự để truyền đi và ngược lại”?", o:["Laptop","Modem","Switch","Access point"], a:1},
+{l:"Đề minh họa", type:"mc", q:"Thiết bị nào giúp kết nối các thiết bị mạng tạo thành mạng hình sao?", o:["Laptop","Modem","Switch","Access point"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Ngoài chức năng kết nối không dây, Access point thường được tích hợp thêm chức năng nào dưới đây?", o:["Mở rộng băng thông","Điều chế tín hiệu","Giải điều chế tín hiệu","Định tuyến"], a:3},
+{l:"Đề minh họa", type:"mc", q:"Ngoài việc kết nối các thiết bị theo mô hình mạng hình sao, Switch còn có chức năng nào dưới đây?", o:["Giảm thiểu xung đột tín hiệu để mạng hoạt động ổn định","Điều chế","Giải điều chế","Phát Wi-Fi"], a:0},
+{l:"Đề minh họa", type:"mc", q:"Điều gì dưới đây đảm bảo cho các máy tính và thiết bị mạng có thể giao tiếp được với nhau đúng cách?", o:["Giao thức mạng (Network protocol)","Giao tiếp mạng (Network communication)","Giao dịch mạng (Network transactions)","Giao thông mạng (Network traffic)"], a:0},
+{l:"Đề minh họa", type:"mc", q:"Giao thức mạng nói chung KHÔNG yêu cầu điều gì dưới đây đối với thiết bị gửi?", o:["Xác định địa chỉ thiết bị nhận","Đóng gói dữ liệu","Giải nén dữ liệu","Truyền gói dữ liệu"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Giao thức mạng nói chung KHÔNG yêu cầu điều gì đối với thiết bị nhận?", o:["Đóng gói dữ liệu","Kiểm tra địa chỉ","Kiểm tra tính đúng đắn của dữ liệu nhận được","Mã hóa dữ liệu nhận được"], a:0},
+{l:"Đề minh họa", type:"mc", q:"Trong giao thức mạng, yêu cầu nào dưới đây được đặt ra trên cả thiết bị gửi và thiết bị nhận?", o:["Đóng gói dữ liệu","Giải nén dữ liệu","Mã hóa dữ liệu để đảm bảo an toàn","Kiểm tra, xử lí lỗi và đảm bảo độ tin cậy"], a:3},
+{l:"Đề minh họa", type:"mc", q:"Những yêu cầu nào KHÔNG thuộc phạm vi của giao thức mạng tại máy tính gửi dữ liệu?", o:["Xác định địa chỉ nơi nhận","Đóng gói dữ liệu để chuyển đi","Xác định đường đi đúng cho gói dữ liệu","Truyền gói dữ liệu"], a:2},
+{l:"Đề minh họa", type:"mc", q:"Trong những yêu cầu sau, yêu cầu nào liên quan đến giao thức mạng?", o:["Hai máy tính phải chạy trên cùng một loại hệ điều hành","Băng thông đường truyền phải đủ lớn để không gây tắc nghẽn mạng","Dữ liệu trao đổi cần được đóng gói với các dữ liệu kiểm soát việc truyền","Một trong hai người sử dụng máy tính phải yêu cầu và người kia phải chấp nhận"], a:2},
+{l:"Đề minh họa", type:"tf", q:"Câu 25: Phát biểu dưới đây đúng hay sai khi nói về các loại và ứng dụng của AI:", items:[
+{text:"a) Trí tuệ nhân tạo hẹp được thiết kế để thực hiện nhiều nhiệm vụ phức tạp giống con người.", a:false},
+{text:"b) Trí tuệ nhân tạo tổng quát là mục tiêu dài hạn, có khả năng tự học và thực hiện nhiều công việc giống con người.", a:true},
+{text:"c) Hệ chuyên gia MYCIN được sử dụng để dự báo thời tiết.", a:false},
+{text:"d) Robot Asimo của Honda là một ví dụ về ứng dụng AI trong điều khiển robot.", a:true}]},
+{l:"Đề minh họa", type:"tf", q:"Câu 26: Một số lĩnh vực phát triển nhờ ứng dụng AI đúng hay sai?", items:[
+{text:"a) AI giúp phát triển người máy thông minh", a:true},
+{text:"b) AI giúp phát triển điều khiển tự động", a:true},
+{text:"c) AI giúp phát triển một số sản phẩm, tiện ích thông minh", a:true},
+{text:"d) AI giúp phát triển các dịch vụ", a:true}]},
+{l:"Đề minh họa", type:"tf", q:"Câu 27: Các phát biểu sau đúng hay sai về Giao thức IP và TCP?", items:[
+{text:"a) Giao thức IP đảm bảo dữ liệu được truyền đến ứng dụng cụ thể trên máy.", a:false},
+{text:"b) Có hai loại địa chỉ IP là IPv4 và IPv6.", a:true},
+{text:"c) Địa chỉ IP và địa chỉ MAC là giống nhau.", a:false},
+{text:"d) Router đóng vai trò như các bưu cục chuyển tiếp bưu phẩm.", a:true}]},
+{l:"Đề minh họa", type:"tf", q:"Câu 28: Để chia sẻ tệp và thư mục trên mạng cục bộ, bạn cần thực hiện các bước sau đây đúng hay sai?", items:[
+{text:"a) Thiết lập chế độ mạng riêng.", a:true},
+{text:"b) Thiết lập chia sẻ thư mục công cộng.", a:true},
+{text:"c) Bật tường lửa để bảo vệ an ninh mạng.", a:false},
+{text:"d) Cho phép các máy khác trong mạng có thể phát hiện và chia sẻ tệp và máy in.", a:true}]}
+];
+
+let quizData=[],currentIndex=0,score=0,wrongAnswers=[],answered=false,tfDone=0;
+const $=id=>document.getElementById(id);
+const lessonNames=["Bài 1","Bài 2","Bài 3","Bài 4","Bài 5","Bài 6","Tham khảo","Đề minh họa"];
+lessonNames.forEach(l=>{
+  const n=allQuestions.filter(q=>q.l===l).length;
+  if(n>0)$('lesson-list').innerHTML+=`<label class="lesson-checkbox"><input type="checkbox" value="${l}" checked> ${l} (${n} câu)</label>`;
+});
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function startQuiz(){
+  const sel=Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(c=>c.value);
+  if(!sel.length){alert("Vui lòng chọn ít nhất 1 bài!");return}
+  quizData=shuffle(allQuestions.filter(q=>sel.includes(q.l)).map(q=>{if(q.type!=='mc')return q;const c=q.o[q.a];const o=shuffle([...q.o]);return {...q,o:o,a:o.indexOf(c)}}));
+  currentIndex=0;score=0;wrongAnswers=[];
+  $('start-screen').style.display='none';$('quiz-screen').style.display='block';$('result-screen').style.display='none';
+  renderQuestion();
+}
+function renderQuestion(){
+  answered=false;tfDone=0;
+  $('next-btn').style.display='none';$('feedback').innerHTML='';
+  const q=quizData[currentIndex];
+  $('progress-text').textContent=`Câu ${currentIndex+1}/${quizData.length} - ${q.l}`;
+  $('question-text').textContent=q.q;
+  const body=$('question-body');body.innerHTML='';
+  if(q.type==='mc'){
+    q.o.forEach((opt,i)=>{
+      const b=document.createElement('button');b.className='option';
+      b.textContent=String.fromCharCode(65+i)+'. '+opt;
+      b.onclick=()=>selectMC(i,b);body.appendChild(b);
+    });
+  }else{
+    q.items.forEach((item,idx)=>{
+      const row=document.createElement('div');row.className='tf-row';
+      const t=document.createElement('div');t.className='tf-text';t.textContent=item.text;
+      const g=document.createElement('div');g.className='tf-btns';
+      const bT=document.createElement('button');bT.className='tf-btn';bT.textContent='Đúng';
+      const bF=document.createElement('button');bF.className='tf-btn';bF.textContent='Sai';
+      bT.onclick=()=>selectTF(idx,true,bT,bF,item.a);
+      bF.onclick=()=>selectTF(idx,false,bT,bF,item.a);
+      g.appendChild(bT);g.appendChild(bF);row.appendChild(t);row.appendChild(g);body.appendChild(row);
+    });
+  }
+}
+function selectMC(i,btn){
+  if(answered)return;answered=true;
+  const q=quizData[currentIndex];
+  const opts=document.querySelectorAll('.option');
+  opts.forEach(o=>o.style.pointerEvents='none');
+  if(i===q.a){
+    btn.classList.add('correct');
+    $('feedback').innerHTML='<span style="color:#28a745">✔ Chính xác!</span>';score++;
+  }else{
+    btn.classList.add('wrong');opts[q.a].classList.add('correct');
+    $('feedback').innerHTML=`<span style="color:#dc3545">✘ Sai! Đáp án đúng: ${String.fromCharCode(65+q.a)}</span>`;
+    wrongAnswers.push({q:q.q,correct:q.o[q.a]});
+  }
+  $('next-btn').style.display='block';
+}
+function selectTF(idx,isTrue,bT,bF,correct){
+  if(answered)return;
+  const ok=(isTrue===correct);
+  const b=isTrue?bT:bF;
+  b.classList.add(ok?'selected-true':'selected-false');
+  b.textContent=(isTrue?'Đúng':'Sai')+(ok?' ✔':' ✘');
+  bT.disabled=true;bF.disabled=true;
+  if(ok)score++;
+  else{const q=quizData[currentIndex];wrongAnswers.push({q:q.q+" - "+q.items[idx].text,correct:correct?"Đúng":"Sai"})}
+  tfDone++;
+  if(tfDone===quizData[currentIndex].items.length){
+    answered=true;
+    $('feedback').innerHTML='<span>Đã hoàn thành câu hỏi này.</span>';
+    $('next-btn').style.display='block';
+  }
+}
+function nextQuestion(){currentIndex++;if(currentIndex<quizData.length){renderQuestion();window.scrollTo(0,0)}else showResults()}
+function showResults(){
+  $('quiz-screen').style.display='none';$('result-screen').style.display='block';
+  let total=0;quizData.forEach(q=>total+=q.type==='mc'?1:q.items.length);
+  $('final-score').textContent=`Bạn đúng: ${score}/${total} ý`;
+  const d=$('detailed-results');
+  if(!wrongAnswers.length){d.innerHTML='<p style="text-align:center;color:#28a745;font-weight:bold">Tuyệt vời! Bạn làm đúng tất cả!</p>'}
+  else{
+    d.innerHTML='<h3>Chi tiết câu sai:</h3>';
+    wrongAnswers.forEach(it=>{
+      const div=document.createElement('div');div.className='wrong-item';
+      const s=document.createElement('strong');s.textContent=it.q;
+      const c=document.createElement('span');c.style.color='#28a745';c.textContent='Đáp án đúng: '+it.correct;
+      div.appendChild(s);div.appendChild(document.createElement('br'));div.appendChild(c);d.appendChild(div);
+    });
+  }
+}
+</script>
+</body>
+</html>
